@@ -18,6 +18,8 @@ var (
 	Key string
 )
 
+const Nil = redis.Nil
+
 type Config struct {
 	Prefix   string `yaml:"prefix" json:"prefix" comment:"KEY前缀"`
 	Host     string `yaml:"host" json:"host" comment:"主机名"`
