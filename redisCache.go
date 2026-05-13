@@ -14,8 +14,8 @@ import (
 
 var (
 	client *redis.Client
-	ctx    context.Context
-	Key    string
+	//ctx    context.Context
+	Key string
 )
 
 type Config struct {
@@ -26,7 +26,7 @@ type Config struct {
 }
 
 func InitRedisCache(config *Config) error {
-	ctx = context.Background()
+	//ctx = context.Background()
 	Key = config.Prefix
 
 	cli, err := startAndGC(config.Host, config.Password, config.DbNum)
@@ -50,6 +50,9 @@ func startAndGC(host, passWord string, dbNum int) (*redis.Client, error) {
 		Password: passWord,
 		DB:       dbNum,
 	})
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
 	cmd := cli.Ping(ctx)
 	if cmd.Err() != nil {
 		return nil, errors.New(fmt.Sprintf("redis connect errors: %v \n", cmd.Err()))
@@ -59,28 +62,28 @@ func startAndGC(host, passWord string, dbNum int) (*redis.Client, error) {
 }
 
 // IsExist check if cached value exists or not.
-func IsExist(key string) bool {
+func IsExist(ctx context.Context, key string) bool {
 	val := client.Exists(ctx, associate(key)).Val()
 	return val != 0
 }
 
 // Delete delete cached value by key.
-func Delete(key string) error {
+func Delete(ctx context.Context, key string) error {
 	return client.Del(ctx, associate(key)).Err()
 }
 
 // Subscribe 订阅主题
-func Subscribe(channel ...string) *redis.PubSub {
+func Subscribe(ctx context.Context, channel ...string) *redis.PubSub {
 	return client.Subscribe(ctx, channel...)
 }
 
 // PSubscribe 订阅主题
-func PSubscribe(channel ...string) *redis.PubSub {
+func PSubscribe(ctx context.Context, channel ...string) *redis.PubSub {
 	return client.PSubscribe(ctx, channel...)
 }
 
 // Publish 发布主题消息
-func Publish(channel string, msg interface{}) error {
+func Publish(ctx context.Context, channel string, msg interface{}) error {
 	msgByte, err := encode(msg)
 	if err != nil {
 		return err
@@ -88,19 +91,19 @@ func Publish(channel string, msg interface{}) error {
 	return client.Publish(ctx, channel, msgByte).Err()
 }
 
-func ReceiveMessage(pubSub *redis.PubSub) (*redis.Message, error) {
+func ReceiveMessage(ctx context.Context, pubSub *redis.PubSub) (*redis.Message, error) {
 	return pubSub.ReceiveMessage(ctx)
 }
 
 // ClearAll clear all cache.
-func ClearAll() error {
+func ClearAll(ctx context.Context) error {
 	return client.FlushAll(ctx).Err()
 }
 
-func ExpireAt(key string, t time.Time) error {
+func ExpireAt(ctx context.Context, key string, t time.Time) error {
 	return client.ExpireAt(ctx, associate(key), t).Err()
 }
-func ExpireIn(key string, d time.Duration) error {
+func ExpireIn(ctx context.Context, key string, d time.Duration) error {
 	return client.Expire(ctx, associate(key), d).Err()
 }
 

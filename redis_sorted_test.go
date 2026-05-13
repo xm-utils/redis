@@ -1,15 +1,17 @@
 package redis
 
 import (
+	"context"
 	"testing"
 )
 
 // TestZAdd 测试向有序集合添加成员
 func TestZAdd(t *testing.T) {
-	key := "test_zadd"
 
+	key := "test_zadd"
+	ctx := context.Background()
 	// 清空可能存在的键
-	Delete(key)
+	Delete(ctx, key)
 
 	// 添加测试数据
 	pairs := map[interface{}]float64{
@@ -18,14 +20,14 @@ func TestZAdd(t *testing.T) {
 		"member3": 30.8,
 	}
 
-	err := ZAdd(key, pairs)
+	err := ZAdd(ctx, key, pairs)
 	if err != nil {
 		t.Errorf("ZAdd failed: %v", err)
 		return
 	}
 
 	// 验证添加的成员
-	card, err := ZCard(key)
+	card, err := ZCard(ctx, key)
 	if err != nil {
 		t.Errorf("ZCard failed: %v", err)
 		return
@@ -36,7 +38,7 @@ func TestZAdd(t *testing.T) {
 	}
 
 	// 验证分数
-	score, err := ZScore(key, "member1")
+	score, err := ZScore(ctx, key, "member1")
 	if err != nil {
 		t.Errorf("ZScore failed: %v", err)
 		return
@@ -47,25 +49,26 @@ func TestZAdd(t *testing.T) {
 	}
 
 	// 清理
-	Delete(key)
+	Delete(ctx, key)
 	t.Log("ZAdd test passed")
 }
 
 // TestZAddByScore 测试通过分数添加成员
 func TestZAddByScore(t *testing.T) {
+	ctx := context.Background()
 	key := "test_zadd_score"
 
 	// 清空可能存在的键
-	Delete(key)
+	Delete(ctx, key)
 
-	err := ZAddByScore(key, "member1", 15.5)
+	err := ZAddByScore(ctx, key, "member1", 15.5)
 	if err != nil {
 		t.Errorf("ZAddByScore failed: %v", err)
 		return
 	}
 
 	// 验证添加的成员
-	card, err := ZCard(key)
+	card, err := ZCard(ctx, key)
 	if err != nil {
 		t.Errorf("ZCard failed: %v", err)
 		return
@@ -76,7 +79,7 @@ func TestZAddByScore(t *testing.T) {
 	}
 
 	// 验证分数
-	score, err := ZScore(key, "member1")
+	score, err := ZScore(ctx, key, "member1")
 	if err != nil {
 		t.Errorf("ZScore failed: %v", err)
 		return
@@ -87,19 +90,20 @@ func TestZAddByScore(t *testing.T) {
 	}
 
 	// 清理
-	Delete(key)
+	Delete(ctx, key)
 	t.Log("ZAddByScore test passed")
 }
 
 // TestZCard 测试获取有序集合成员数
 func TestZCard(t *testing.T) {
+	ctx := context.Background()
 	key := "test_zcard"
 
 	// 清空可能存在的键
-	Delete(key)
+	Delete(ctx, key)
 
 	// 测试空集合
-	card, err := ZCard(key)
+	card, err := ZCard(ctx, key)
 	if err != nil {
 		t.Errorf("ZCard failed: %v", err)
 		return
@@ -110,11 +114,11 @@ func TestZCard(t *testing.T) {
 	}
 
 	// 添加成员
-	ZAddByScore(key, "member1", 10.0)
-	ZAddByScore(key, "member2", 20.0)
+	ZAddByScore(ctx, key, "member1", 10.0)
+	ZAddByScore(ctx, key, "member2", 20.0)
 
 	// 测试非空集合
-	card, err = ZCard(key)
+	card, err = ZCard(ctx, key)
 	if err != nil {
 		t.Errorf("ZCard failed: %v", err)
 		return
@@ -125,25 +129,26 @@ func TestZCard(t *testing.T) {
 	}
 
 	// 清理
-	Delete(key)
+	Delete(ctx, key)
 	t.Log("ZCard test passed")
 }
 
 // TestZCount 测试计算指定区间分数的成员数
 func TestZCount(t *testing.T) {
+	ctx := context.Background()
 	key := "test_zcount"
 
 	// 清空可能存在的键
-	Delete(key)
+	Delete(ctx, key)
 
 	// 添加测试数据
-	ZAddByScore(key, "member1", 10.0)
-	ZAddByScore(key, "member2", 20.0)
-	ZAddByScore(key, "member3", 30.0)
-	ZAddByScore(key, "member4", 40.0)
+	ZAddByScore(ctx, key, "member1", 10.0)
+	ZAddByScore(ctx, key, "member2", 20.0)
+	ZAddByScore(ctx, key, "member3", 30.0)
+	ZAddByScore(ctx, key, "member4", 40.0)
 
 	// 计算分数在 15-35 之间的成员数
-	count, err := ZCount(key, "15", "35")
+	count, err := ZCount(ctx, key, "15", "35")
 	if err != nil {
 		t.Errorf("ZCount failed: %v", err)
 		return
@@ -154,7 +159,7 @@ func TestZCount(t *testing.T) {
 	}
 
 	// 计算所有成员数
-	count, err = ZCount(key, "-inf", "+inf")
+	count, err = ZCount(ctx, key, "-inf", "+inf")
 	if err != nil {
 		t.Errorf("ZCount failed: %v", err)
 		return
@@ -165,22 +170,23 @@ func TestZCount(t *testing.T) {
 	}
 
 	// 清理
-	Delete(key)
+	Delete(ctx, key)
 	t.Log("ZCount test passed")
 }
 
 // TestZScore 测试获取成员分数
 func TestZScore(t *testing.T) {
+	ctx := context.Background()
 	key := "test_zscore"
 
 	// 清空可能存在的键
-	Delete(key)
+	Delete(ctx, key)
 
 	// 添加测试数据
-	ZAddByScore(key, "member1", 25.5)
+	ZAddByScore(ctx, key, "member1", 25.5)
 
 	// 获取存在的成员分数
-	score, err := ZScore(key, "member1")
+	score, err := ZScore(ctx, key, "member1")
 	if err != nil {
 		t.Errorf("ZScore failed: %v", err)
 		return
@@ -191,7 +197,7 @@ func TestZScore(t *testing.T) {
 	}
 
 	// 尝试获取不存在的成员分数
-	score, err = ZScore(key, "nonexistent")
+	score, err = ZScore(ctx, key, "nonexistent")
 	if err == nil {
 		t.Error("Expected error for nonexistent member")
 	}
@@ -201,22 +207,24 @@ func TestZScore(t *testing.T) {
 	}
 
 	// 清理
-	Delete(key)
+	Delete(ctx, key)
 	t.Log("ZScore test passed")
 }
 
 // TestZIncrBy 测试增加成员分数
 func TestZIncrBy(t *testing.T) {
+
+	ctx := context.Background()
 	key := "test_zincrby"
 
 	// 清空可能存在的键
-	Delete(key)
+	Delete(ctx, key)
 
 	// 添加初始成员
-	ZAddByScore(key, "member1", 10.0)
+	ZAddByScore(ctx, key, "member1", 10.0)
 
 	// 增加分数
-	newScore, err := ZIncrBy(key, "member1", 5.5)
+	newScore, err := ZIncrBy(ctx, key, "member1", 5.5)
 	if err != nil {
 		t.Errorf("ZIncrBy failed: %v", err)
 		return
@@ -227,7 +235,7 @@ func TestZIncrBy(t *testing.T) {
 	}
 
 	// 验证实际分数
-	actualScore, err := ZScore(key, "member1")
+	actualScore, err := ZScore(ctx, key, "member1")
 	if err != nil {
 		t.Errorf("ZScore failed: %v", err)
 		return
@@ -238,36 +246,38 @@ func TestZIncrBy(t *testing.T) {
 	}
 
 	// 清理
-	Delete(key)
+	Delete(ctx, key)
 	t.Log("ZIncrBy test passed")
 }
 
 // TestZInterStore 测试有序集合交集并存储
 func TestZInterStore(t *testing.T) {
+
+	ctx := context.Background()
 	key1 := "test_zinterstore1"
 	key2 := "test_zinterstore2"
 	dest := "test_zinterstore_dest"
 
 	// 清空可能存在的键
-	Delete(key1)
-	Delete(key2)
-	Delete(dest)
+	Delete(ctx, key1)
+	Delete(ctx, key2)
+	Delete(ctx, dest)
 
 	// 添加测试数据
-	ZAdd(key1, map[interface{}]float64{
+	ZAdd(ctx, key1, map[interface{}]float64{
 		"a": 1,
 		"b": 2,
 		"c": 3,
 	})
 
-	ZAdd(key2, map[interface{}]float64{
+	ZAdd(ctx, key2, map[interface{}]float64{
 		"b": 1,
 		"c": 2,
 		"d": 4,
 	})
 
 	// 计算交集并存储
-	count, err := ZInterStore(dest, key1, key2)
+	count, err := ZInterStore(ctx, dest, key1, key2)
 	if err != nil {
 		t.Errorf("ZInterStore failed: %v", err)
 		return
@@ -279,7 +289,7 @@ func TestZInterStore(t *testing.T) {
 	}
 
 	// 验证交集成员
-	card, err := ZCard(dest)
+	card, err := ZCard(ctx, dest)
 	if err != nil {
 		t.Errorf("ZCard failed: %v", err)
 		return
@@ -290,21 +300,23 @@ func TestZInterStore(t *testing.T) {
 	}
 
 	// 清理
-	Delete(key1)
-	Delete(key2)
-	Delete(dest)
+	Delete(ctx, key1)
+	Delete(ctx, key2)
+	Delete(ctx, dest)
 	t.Log("ZInterStore test passed")
 }
 
 // TestZLexCount 测试字典区间成员计数
 func TestZLexCount(t *testing.T) {
+
+	ctx := context.Background()
 	key := "test_zlexcount"
 
 	// 清空可能存在的键
-	Delete(key)
+	Delete(ctx, key)
 
 	// 添加测试数据，使用相同的分数以便测试字典序
-	ZAdd(key, map[interface{}]float64{
+	ZAdd(ctx, key, map[interface{}]float64{
 		"apple":  0,
 		"banana": 0,
 		"cherry": 0,
@@ -312,7 +324,7 @@ func TestZLexCount(t *testing.T) {
 	})
 
 	// 计算字典区间内的成员数 [apple, cherry]
-	count, err := ZLexCount(key, "[apple", "[cherry")
+	count, err := ZLexCount(ctx, key, "[apple", "[cherry")
 	if err != nil {
 		t.Errorf("ZLexCount failed: %v", err)
 		return
@@ -323,19 +335,20 @@ func TestZLexCount(t *testing.T) {
 	}
 
 	// 清理
-	Delete(key)
+	Delete(ctx, key)
 	t.Log("ZLexCount test passed")
 }
 
 // TestZRange 测试通过索引区间获取成员
 func TestZRange(t *testing.T) {
+	ctx := context.Background()
 	key := "test_zrange"
 
 	// 清空可能存在的键
-	Delete(key)
+	Delete(ctx, key)
 
 	// 添加测试数据
-	ZAdd(key, map[interface{}]float64{
+	ZAdd(ctx, key, map[interface{}]float64{
 		"member1": 10,
 		"member2": 20,
 		"member3": 30,
@@ -343,7 +356,7 @@ func TestZRange(t *testing.T) {
 	})
 
 	// 获取索引 0-2 的成员
-	members, err := ZRange[string](key, 0, 2)
+	members, err := ZRange[string](ctx, key, 0, 2)
 	if err != nil {
 		t.Errorf("ZRange failed: %v", err)
 		return
@@ -359,26 +372,27 @@ func TestZRange(t *testing.T) {
 	}
 
 	// 清理
-	Delete(key)
+	Delete(ctx, key)
 	t.Log("ZRange test passed")
 }
 
 // TestZRangeWithScores 测试获取带分数的成员
 func TestZRangeWithScores(t *testing.T) {
+	ctx := context.Background()
 	key := "test_zrangewithscores"
 
 	// 清空可能存在的键
-	Delete(key)
+	Delete(ctx, key)
 
 	// 添加测试数据
-	ZAdd(key, map[interface{}]float64{
+	ZAdd(ctx, key, map[interface{}]float64{
 		"member1": 10,
 		"member2": 20,
 		"member3": 30,
 	})
 
 	// 获取带分数的成员
-	zMembers, err := ZRangeWithScores(key, 0, -1)
+	zMembers, err := ZRangeWithScores(ctx, key, 0, -1)
 	if err != nil {
 		t.Errorf("ZRangeWithScores failed: %v", err)
 		return
@@ -394,19 +408,20 @@ func TestZRangeWithScores(t *testing.T) {
 	}
 
 	// 清理
-	Delete(key)
+	Delete(ctx, key)
 	t.Log("ZRangeWithScores test passed")
 }
 
 // TestZRangeByLex 测试通过字典区间获取成员
 func TestZRangeByLex(t *testing.T) {
+	ctx := context.Background()
 	key := "test_zrangebylex"
 
 	// 清空可能存在的键
-	Delete(key)
+	Delete(ctx, key)
 
 	// 添加测试数据，使用相同分数以便测试字典序
-	ZAdd(key, map[interface{}]float64{
+	ZAdd(ctx, key, map[interface{}]float64{
 		"apple":  0,
 		"banana": 0,
 		"cherry": 0,
@@ -414,7 +429,7 @@ func TestZRangeByLex(t *testing.T) {
 	})
 
 	// 获取字典区间内的成员
-	members, err := ZRangeByLex(key, "[apple", "[cherry")
+	members, err := ZRangeByLex(ctx, key, "[apple", "[cherry")
 	if err != nil {
 		t.Errorf("ZRangeByLex failed: %v", err)
 		return
@@ -425,19 +440,20 @@ func TestZRangeByLex(t *testing.T) {
 	}
 
 	// 清理
-	Delete(key)
+	Delete(ctx, key)
 	t.Log("ZRangeByLex test passed")
 }
 
 // TestZRangeByScore 测试通过分数区间获取成员
 func TestZRangeByScore(t *testing.T) {
+	ctx := context.Background()
 	key := "test_zrangebyscore"
 
 	// 清空可能存在的键
-	Delete(key)
+	Delete(ctx, key)
 
 	// 添加测试数据
-	ZAdd(key, map[interface{}]float64{
+	ZAdd(ctx, key, map[interface{}]float64{
 		"low":    5,
 		"medium": 15,
 		"high":   25,
@@ -445,7 +461,7 @@ func TestZRangeByScore(t *testing.T) {
 	})
 
 	// 获取分数在 10-30 之间的成员
-	members, err := ZRangeByScore[string](key, "10", "30")
+	members, err := ZRangeByScore[string](ctx, key, "10", "30")
 	if err != nil {
 		t.Errorf("ZRangeByScore failed: %v", err)
 		return
@@ -456,26 +472,27 @@ func TestZRangeByScore(t *testing.T) {
 	}
 
 	// 清理
-	Delete(key)
+	Delete(ctx, key)
 	t.Log("ZRangeByScore test passed")
 }
 
 // TestZRangeByScoreWithScores 测试通过分数区间获取带分数的成员
 func TestZRangeByScoreWithScores(t *testing.T) {
+	ctx := context.Background()
 	key := "test_zrangebyscorewithscores"
 
 	// 清空可能存在的键
-	Delete(key)
+	Delete(ctx, key)
 
 	// 添加测试数据
-	ZAdd(key, map[interface{}]float64{
+	ZAdd(ctx, key, map[interface{}]float64{
 		"low":    5,
 		"medium": 15,
 		"high":   25,
 	})
 
 	// 获取分数在 10-20 之间的带分数成员
-	zMembers, err := ZRangeByScoreWithScores(key, "10", "20")
+	zMembers, err := ZRangeByScoreWithScores(ctx, key, "10", "20")
 	if err != nil {
 		t.Errorf("ZRangeByScoreWithScores failed: %v", err)
 		return
@@ -490,26 +507,27 @@ func TestZRangeByScoreWithScores(t *testing.T) {
 	}
 
 	// 清理
-	Delete(key)
+	Delete(ctx, key)
 	t.Log("ZRangeByScoreWithScores test passed")
 }
 
 // TestZRank 测试获取成员索引
 func TestZRank(t *testing.T) {
+	ctx := context.Background()
 	key := "test_zrank"
 
 	// 清空可能存在的键
-	Delete(key)
+	Delete(ctx, key)
 
 	// 添加测试数据
-	ZAdd(key, map[interface{}]float64{
+	ZAdd(ctx, key, map[interface{}]float64{
 		"first":  10,
 		"second": 20,
 		"third":  30,
 	})
 
 	// 获取成员排名（从0开始）
-	rank, err := ZRank(key, "first")
+	rank, err := ZRank(ctx, key, "first")
 	if err != nil {
 		t.Errorf("ZRank failed: %v", err)
 		return
@@ -519,7 +537,7 @@ func TestZRank(t *testing.T) {
 		t.Errorf("Expected rank 0, got %d", rank)
 	}
 
-	rank, err = ZRank(key, "second")
+	rank, err = ZRank(ctx, key, "second")
 	if err != nil {
 		t.Errorf("ZRank failed: %v", err)
 		return
@@ -530,26 +548,27 @@ func TestZRank(t *testing.T) {
 	}
 
 	// 清理
-	Delete(key)
+	Delete(ctx, key)
 	t.Log("ZRank test passed")
 }
 
 // TestZRevRank 测试获取成员反向排名
 func TestZRevRank(t *testing.T) {
+	ctx := context.Background()
 	key := "test_zrevrank"
 
 	// 清空可能存在的键
-	Delete(key)
+	Delete(ctx, key)
 
 	// 添加测试数据
-	ZAdd(key, map[interface{}]float64{
+	ZAdd(ctx, key, map[interface{}]float64{
 		"lowest":  10,
 		"medium":  20,
 		"highest": 30,
 	})
 
 	// 获取反向排名（分数从高到低）
-	rank, err := ZRevRank(key, "highest") // 最高分应该是第0名
+	rank, err := ZRevRank(ctx, key, "highest") // 最高分应该是第0名
 	if err != nil {
 		t.Errorf("ZRevRank failed: %v", err)
 		return
@@ -559,7 +578,7 @@ func TestZRevRank(t *testing.T) {
 		t.Errorf("Expected reverse rank 0 for highest score, got %d", rank)
 	}
 
-	rank, err = ZRevRank(key, "lowest") // 最低分应该是第2名
+	rank, err = ZRevRank(ctx, key, "lowest") // 最低分应该是第2名
 	if err != nil {
 		t.Errorf("ZRevRank failed: %v", err)
 		return
@@ -570,19 +589,20 @@ func TestZRevRank(t *testing.T) {
 	}
 
 	// 清理
-	Delete(key)
+	Delete(ctx, key)
 	t.Log("ZRevRank test passed")
 }
 
 // TestZRevRange 测试反向索引区间获取成员
 func TestZRevRange(t *testing.T) {
+	ctx := context.Background()
 	key := "test_zrevrange"
 
 	// 清空可能存在的键
-	Delete(key)
+	Delete(ctx, key)
 
 	// 添加测试数据
-	ZAdd(key, map[interface{}]float64{
+	ZAdd(ctx, key, map[interface{}]float64{
 		"first":  10,
 		"second": 20,
 		"third":  30,
@@ -590,7 +610,7 @@ func TestZRevRange(t *testing.T) {
 	})
 
 	// 获取反向排序的前2个成员（分数从高到低）
-	members, err := ZRevRange[string](key, 0, 1)
+	members, err := ZRevRange[string](ctx, key, 0, 1)
 	if err != nil {
 		t.Errorf("ZRevRange failed: %v", err)
 		return
@@ -606,19 +626,20 @@ func TestZRevRange(t *testing.T) {
 	}
 
 	// 清理
-	Delete(key)
+	Delete(ctx, key)
 	t.Log("ZRevRange test passed")
 }
 
 // TestZRevRangeByScore 测试反向分数区间获取成员
 func TestZRevRangeByScore(t *testing.T) {
+	ctx := context.Background()
 	key := "test_zrevrangebyscore"
 
 	// 清空可能存在的键
-	Delete(key)
+	Delete(ctx, key)
 
 	// 添加测试数据
-	ZAdd(key, map[interface{}]float64{
+	ZAdd(ctx, key, map[interface{}]float64{
 		"very_low":  5,
 		"low":       10,
 		"medium":    20,
@@ -627,7 +648,7 @@ func TestZRevRangeByScore(t *testing.T) {
 	})
 
 	// 获取分数在 35 到 15 之间（从高到低）的成员
-	members, err := ZRevRangeByScore[string](key, "35", "15")
+	members, err := ZRevRangeByScore[string](ctx, key, "35", "15")
 	if err != nil {
 		t.Errorf("ZRevRangeByScore failed: %v", err)
 		return
@@ -638,26 +659,27 @@ func TestZRevRangeByScore(t *testing.T) {
 	}
 
 	// 清理
-	Delete(key)
+	Delete(ctx, key)
 	t.Log("ZRevRangeByScore test passed")
 }
 
 // TestZRevRangeByScoreWithScores 测试反向分数区间获取带分数的成员
 func TestZRevRangeByScoreWithScores(t *testing.T) {
+	ctx := context.Background()
 	key := "test_zrevrangebyscorewithscores"
 
 	// 清空可能存在的键
-	Delete(key)
+	Delete(ctx, key)
 
 	// 添加测试数据
-	ZAdd(key, map[interface{}]float64{
+	ZAdd(ctx, key, map[interface{}]float64{
 		"low":    10,
 		"medium": 20,
 		"high":   30,
 	})
 
 	// 获取分数在 30 到 15 之间（从高到低）的带分数成员
-	zMembers, err := ZRevRangeByScoreWithScores(key, "30", "15")
+	zMembers, err := ZRevRangeByScoreWithScores(ctx, key, "30", "15")
 	if err != nil {
 		t.Errorf("ZRevRangeByScoreWithScores failed: %v", err)
 		return
@@ -669,19 +691,20 @@ func TestZRevRangeByScoreWithScores(t *testing.T) {
 	}
 
 	// 清理
-	Delete(key)
+	Delete(ctx, key)
 	t.Log("ZRevRangeByScoreWithScores test passed")
 }
 
 // TestZRem 测试移除有序集合成员
 func TestZRem(t *testing.T) {
+	ctx := context.Background()
 	key := "test_zrem"
 
 	// 清空可能存在的键
-	Delete(key)
+	Delete(ctx, key)
 
 	// 添加测试数据
-	ZAdd(key, map[interface{}]float64{
+	ZAdd(ctx, key, map[interface{}]float64{
 		"member1": 10,
 		"member2": 20,
 		"member3": 30,
@@ -689,7 +712,7 @@ func TestZRem(t *testing.T) {
 	})
 
 	// 移除两个成员
-	removed, err := ZRem(key, "member1", "member3")
+	removed, err := ZRem(ctx, key, "member1", "member3")
 	if err != nil {
 		t.Errorf("ZRem failed: %v", err)
 		return
@@ -700,7 +723,7 @@ func TestZRem(t *testing.T) {
 	}
 
 	// 验证剩余成员数量
-	card, err := ZCard(key)
+	card, err := ZCard(ctx, key)
 	if err != nil {
 		t.Errorf("ZCard failed: %v", err)
 		return
@@ -711,7 +734,7 @@ func TestZRem(t *testing.T) {
 	}
 
 	// 尝试移除不存在的成员
-	removed, err = ZRem(key, "nonexistent")
+	removed, err = ZRem(ctx, key, "nonexistent")
 	if err != nil {
 		t.Errorf("ZRem failed: %v", err)
 		return
@@ -722,19 +745,20 @@ func TestZRem(t *testing.T) {
 	}
 
 	// 清理
-	Delete(key)
+	Delete(ctx, key)
 	t.Log("ZRem test passed")
 }
 
 // TestZRemRangeByLex 测试移除字典区间内的成员
 func TestZRemRangeByLex(t *testing.T) {
+	ctx := context.Background()
 	key := "test_zremrangebylex"
 
 	// 清空可能存在的键
-	Delete(key)
+	Delete(ctx, key)
 
 	// 添加测试数据，使用相同分数以便测试字典序
-	ZAdd(key, map[interface{}]float64{
+	ZAdd(ctx, key, map[interface{}]float64{
 		"apple":  0,
 		"banana": 0,
 		"cherry": 0,
@@ -742,7 +766,7 @@ func TestZRemRangeByLex(t *testing.T) {
 	})
 
 	// 移除字典区间 [banana, date] 内的成员
-	removed, err := ZRemRangeByLex(key, "[banana", "[date")
+	removed, err := ZRemRangeByLex(ctx, key, "[banana", "[date")
 	if err != nil {
 		t.Errorf("ZRemRangeByLex failed: %v", err)
 		return
@@ -753,7 +777,7 @@ func TestZRemRangeByLex(t *testing.T) {
 	}
 
 	// 验证剩余成员
-	card, err := ZCard(key)
+	card, err := ZCard(ctx, key)
 	if err != nil {
 		t.Errorf("ZCard failed: %v", err)
 		return
@@ -764,19 +788,20 @@ func TestZRemRangeByLex(t *testing.T) {
 	}
 
 	// 清理
-	Delete(key)
+	Delete(ctx, key)
 	t.Log("ZRemRangeByLex test passed")
 }
 
 // TestZRemRangeByRank 测试移除排名区间内的成员
 func TestZRemRangeByRank(t *testing.T) {
+	ctx := context.Background()
 	key := "test_zremrangebyrank"
 
 	// 清空可能存在的键
-	Delete(key)
+	Delete(ctx, key)
 
 	// 添加测试数据
-	ZAdd(key, map[interface{}]float64{
+	ZAdd(ctx, key, map[interface{}]float64{
 		"first":  10,
 		"second": 20,
 		"third":  30,
@@ -784,7 +809,7 @@ func TestZRemRangeByRank(t *testing.T) {
 	})
 
 	// 移除排名 1-2 的成员（second 和 third）
-	removed, err := ZRemRangeByRank(key, 1, 2)
+	removed, err := ZRemRangeByRank(ctx, key, 1, 2)
 	if err != nil {
 		t.Errorf("ZRemRangeByRank failed: %v", err)
 		return
@@ -795,7 +820,7 @@ func TestZRemRangeByRank(t *testing.T) {
 	}
 
 	// 验证剩余成员
-	card, err := ZCard(key)
+	card, err := ZCard(ctx, key)
 	if err != nil {
 		t.Errorf("ZCard failed: %v", err)
 		return
@@ -806,19 +831,20 @@ func TestZRemRangeByRank(t *testing.T) {
 	}
 
 	// 清理
-	Delete(key)
+	Delete(ctx, key)
 	t.Log("ZRemRangeByRank test passed")
 }
 
 // TestZRemRangeByScore 测试移除分数区间内的成员
 func TestZRemRangeByScore(t *testing.T) {
+	ctx := context.Background()
 	key := "test_zremrangebyscore"
 
 	// 清空可能存在的键
-	Delete(key)
+	Delete(ctx, key)
 
 	// 添加测试数据
-	ZAdd(key, map[interface{}]float64{
+	ZAdd(ctx, key, map[interface{}]float64{
 		"very_low":  5,
 		"low":       10,
 		"medium":    20,
@@ -827,7 +853,7 @@ func TestZRemRangeByScore(t *testing.T) {
 	})
 
 	// 移除分数 10-30 之间的成员
-	removed, err := ZRemRangeByScore(key, 10, 30)
+	removed, err := ZRemRangeByScore(ctx, key, 10, 30)
 	if err != nil {
 		t.Errorf("ZRemRangeByScore failed: %v", err)
 		return
@@ -838,7 +864,7 @@ func TestZRemRangeByScore(t *testing.T) {
 	}
 
 	// 验证剩余成员
-	card, err := ZCard(key)
+	card, err := ZCard(ctx, key)
 	if err != nil {
 		t.Errorf("ZCard failed: %v", err)
 		return
@@ -849,34 +875,35 @@ func TestZRemRangeByScore(t *testing.T) {
 	}
 
 	// 清理
-	Delete(key)
+	Delete(ctx, key)
 	t.Log("ZRemRangeByScore test passed")
 }
 
 // TestZUnionStore 测试有序集合并集并存储
 func TestZUnionStore(t *testing.T) {
+	ctx := context.Background()
 	key1 := "test_zunionstore1"
 	key2 := "test_zunionstore2"
 	dest := "test_zunionstore_dest"
 
 	// 清空可能存在的键
-	Delete(key1)
-	Delete(key2)
-	Delete(dest)
+	Delete(ctx, key1)
+	Delete(ctx, key2)
+	Delete(ctx, dest)
 
 	// 添加测试数据
-	ZAdd(key1, map[interface{}]float64{
+	ZAdd(ctx, key1, map[interface{}]float64{
 		"a": 1,
 		"b": 2,
 	})
 
-	ZAdd(key2, map[interface{}]float64{
+	ZAdd(ctx, key2, map[interface{}]float64{
 		"b": 1, // 注意：b 在两个集合中都有，分数不同
 		"c": 3,
 	})
 
 	// 计算并集并存储
-	count, err := ZUnionStore(dest, key1, key2)
+	count, err := ZUnionStore(ctx, dest, key1, key2)
 	if err != nil {
 		t.Errorf("ZUnionStore failed: %v", err)
 		return
@@ -887,7 +914,7 @@ func TestZUnionStore(t *testing.T) {
 		t.Errorf("Expected union count 3, got %d", count)
 	}
 
-	card, err := ZCard(dest)
+	card, err := ZCard(ctx, dest)
 	if err != nil {
 		t.Errorf("ZCard failed: %v", err)
 		return
@@ -898,8 +925,8 @@ func TestZUnionStore(t *testing.T) {
 	}
 
 	// 清理
-	Delete(key1)
-	Delete(key2)
-	Delete(dest)
+	Delete(ctx, key1)
+	Delete(ctx, key2)
+	Delete(ctx, dest)
 	t.Log("ZUnionStore test passed")
 }

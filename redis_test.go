@@ -1,6 +1,7 @@
 package redis
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -25,23 +26,24 @@ type args struct {
 }
 
 func TestHGetAll(t *testing.T) {
+	ctx := context.Background()
 
-	exist2 := IsExist("test_users2")
+	exist2 := IsExist(ctx, "test_users2")
 	fmt.Println("test_users2 IsExist", exist2)
 
-	if err := Delete("test_users"); err != nil {
+	if err := Delete(ctx, "test_users"); err != nil {
 		t.Error(err)
 		return
 	}
 
-	exist := IsExist("test_users")
+	exist := IsExist(ctx, "test_users")
 	fmt.Println("test_users IsExist", exist)
 	if exist {
-		t.Log("HLen", HLen("test_users"))
+		t.Log("HLen", HLen(ctx, "test_users"))
 	}
 
 	fmt.Println("HSet。。。。。。。。。。。。。。。")
-	if err := HSet("test_users", "user_11", &args{
+	if err := HSet(ctx, "test_users", "user_11", &args{
 		Name:  "name_11",
 		Age:   11,
 		Phone: "phone_11",
@@ -51,7 +53,7 @@ func TestHGetAll(t *testing.T) {
 	}
 	fmt.Println("HGet。。。。。。。。。。。。。。。")
 
-	if arg, err := HGet[args]("test_users", "user_11"); err != nil {
+	if arg, err := HGet[args](ctx, "test_users", "user_11"); err != nil {
 		t.Error("HGet error:", err)
 		return
 	} else {
@@ -70,15 +72,15 @@ func TestHGetAll(t *testing.T) {
 		}
 	}
 
-	if err := HMSet("test_users", data); err != nil {
+	if err := HMSet(ctx, "test_users", data); err != nil {
 		t.Error("HSetAll error:", err)
 		return
 	}
 
-	t.Log("HLen", HLen("test_users"))
+	t.Log("HLen", HLen(ctx, "test_users"))
 
 	fmt.Println("HKeys。。。。。。。。。。。。。。。")
-	if keys, err := HKeys("test_users"); err != nil {
+	if keys, err := HKeys(ctx, "test_users"); err != nil {
 		t.Error("HKeys error:", err)
 		return
 	} else {
@@ -86,13 +88,13 @@ func TestHGetAll(t *testing.T) {
 	}
 
 	fmt.Println("HMGet。。。。。。。。。。。。。。。")
-	hmGet := HMGet[args]("test_users", "user_1", "user_2", "user_3")
+	hmGet := HMGet[args](ctx, "test_users", "user_1", "user_2", "user_3")
 	for k, v := range hmGet {
 		fmt.Println(k, v)
 	}
 
 	fmt.Println("HGetAll。。。。。。。。。。。。。。。")
-	err, m := HGetAll[args]("test_users")
+	err, m := HGetAll[args](ctx, "test_users")
 	if err != nil {
 		t.Error("HGetAll error", err)
 		return
@@ -102,7 +104,7 @@ func TestHGetAll(t *testing.T) {
 	}
 
 	fmt.Println("HVals。。。。。。。。。。。。。。。。。")
-	vals, err := HVals[args]("test_users")
+	vals, err := HVals[args](ctx, "test_users")
 	if err != nil {
 		t.Error("HVals error", err)
 		return
@@ -123,15 +125,16 @@ func TestHSet(t *testing.T) {
 }
 
 func TestList(t *testing.T) {
+	ctx := context.Background()
 
 	fmt.Println("LPush。。。。。。。。。。。。。。。")
-	if err := LPush(listKey, "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"); err != nil {
+	if err := LPush(ctx, listKey, "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"); err != nil {
 		t.Error(err)
 		return
 	}
 
 	fmt.Println("获取列表长度")
-	if lenth, err := LLen(listKey); err != nil {
+	if lenth, err := LLen(ctx, listKey); err != nil {
 		t.Error(err)
 		return
 	} else {
@@ -139,7 +142,7 @@ func TestList(t *testing.T) {
 	}
 
 	fmt.Println("通过索引获取列表中的元素")
-	if v, err := LIndex[string](listKey, 2); err != nil {
+	if v, err := LIndex[string](ctx, listKey, 2); err != nil {
 		t.Error(err)
 		return
 	} else {
@@ -147,7 +150,7 @@ func TestList(t *testing.T) {
 	}
 
 	fmt.Println("LPop。。。。。。。。。。。。。。。")
-	if v, err := LPop[string](listKey); err != nil {
+	if v, err := LPop[string](ctx, listKey); err != nil {
 		t.Error(err)
 		return
 	} else {
@@ -158,28 +161,28 @@ func TestList(t *testing.T) {
 
 	// Linsert 5	LINSERT key BEFORE|AFTER pivot value 在列表的元素前或者后插入元素
 	fmt.Println("Linsert。。。。。。。。。。。。。。。")
-	if err := LInsert(listKey, "BEFORE", 2, 11); err != nil {
+	if err := LInsert(ctx, listKey, "BEFORE", 2, 11); err != nil {
 		t.Error(err)
 		return
 	}
 
 	// LPush 8	LPUSH key value1 [value2] 将一个或多个值插入到列表头部
 	fmt.Println("LPush。。。。。。。。。。。。。。。")
-	if err := LPush(listKey, 20, 21, 22, 23, 24, 25); err != nil {
+	if err := LPush(ctx, listKey, 20, 21, 22, 23, 24, 25); err != nil {
 		t.Error(err)
 		return
 	}
 
 	// LPushX 9	LPUSHX key value 将一个值插入到已存在的列表头部
 	fmt.Println("LPushX。。。。。。。。。。。。。。。")
-	if err := LPushX(listKey, 26, 27, 28, 29, 30); err != nil {
+	if err := LPushX(ctx, listKey, 26, 27, 28, 29, 30); err != nil {
 		t.Error(err)
 		return
 	}
 
 	// Lrange 10	LRANGE key start stop 获取列表指定范围内的元素
 	fmt.Println("Lrange。。。。。。。。。。。。。。。")
-	if v, err := LRange[string](listKey, 0, 10); err != nil {
+	if v, err := LRange[string](ctx, listKey, 0, 10); err != nil {
 		t.Error(err)
 		return
 	} else {
@@ -188,7 +191,7 @@ func TestList(t *testing.T) {
 
 	// LRem 11	LREM key count value 移除列表元素
 	fmt.Println("LRem。。。。。。。。。。。。。。。")
-	if v, err := LRem(listKey, 2, 27); err != nil {
+	if v, err := LRem(ctx, listKey, 2, 27); err != nil {
 		t.Error(err)
 		return
 	} else {
@@ -197,21 +200,21 @@ func TestList(t *testing.T) {
 
 	// Lset 12	LSET key index value 通过索引设置列表元素的值
 	fmt.Println("Lset。。。。。。。。。。。。。。。")
-	if err := LSet(listKey, 5, 40); err != nil {
+	if err := LSet(ctx, listKey, 5, 40); err != nil {
 		t.Error(err)
 		return
 	}
 
 	// Ltrim 13	LTRIM key start stop 对一个列表进行修剪(trim)，就是说，让列表只保留指定区间内的元素，不在指定区间之内的元素都将被删除。
 	fmt.Println("Ltrim。。。。。。。。。。。。。。。")
-	if err := Ltrim(listKey, 5, 10); err != nil {
+	if err := Ltrim(ctx, listKey, 5, 10); err != nil {
 		t.Error(err)
 		return
 	}
 
 	// RPop 14	RPOP key 移除列表的最后一个元素，返回值为移除的元素。
 	fmt.Println("RPop。。。。。。。。。。。。。。。")
-	if v, err := RPop[string](listKey); err != nil {
+	if v, err := RPop[string](ctx, listKey); err != nil {
 		t.Error(err)
 		return
 	} else {
@@ -220,7 +223,7 @@ func TestList(t *testing.T) {
 
 	// RPopLPush 15	RPOPLPUSH source destination 移除列表的最后一个元素，并将该元素添加到另一个列表并返回
 	fmt.Println("RPopLPush。。。。。。。。。。。。。。。")
-	if v, err := RPopLPush[string](listKey, listKey2); err != nil {
+	if v, err := RPopLPush[string](ctx, listKey, listKey2); err != nil {
 		t.Error(err)
 		return
 	} else {
@@ -229,24 +232,24 @@ func TestList(t *testing.T) {
 
 	// Rpush 16	RPUSH key value1 [value2] 在列表中添加一个或多个值到列表尾部
 	fmt.Println("Rpush。。。。。。。。。。。。。。。")
-	if err := RPush(listKey, 1, 2, 3, 4, 5); err != nil {
+	if err := RPush(ctx, listKey, 1, 2, 3, 4, 5); err != nil {
 		t.Error(err)
 		return
 	}
 
 	// RPushX 17 RPUSHX key value 为已存在的列表添加值
 	fmt.Println("RPushX。。。。。。。。。。。。。。。")
-	if err := RPushX(listKey, 6, 7, 8, 9); err != nil {
+	if err := RPushX(ctx, listKey, 6, 7, 8, 9); err != nil {
 		t.Error(err)
 		return
 	}
 
 	fmt.Println("获取列表长度")
-	if lenth, err := LLen(listKey); err != nil {
+	if lenth, err := LLen(ctx, listKey); err != nil {
 		t.Error(err)
 		return
 	} else {
-		res, err := LRange[string](listKey, 0, lenth)
+		res, err := LRange[string](ctx, listKey, 0, lenth)
 		t.Log("列表长度：", lenth, "列表内容：", res)
 		if err != nil {
 			t.Error(err)
@@ -262,8 +265,9 @@ const (
 )
 
 func TestBLPop(t *testing.T) {
+	ctx := context.Background()
 	for {
-		k, v, err := BLPop[args](0, listKey, listKey2)
+		k, v, err := BLPop[args](ctx, 0, listKey, listKey2)
 		if err != nil {
 			t.Error(err)
 			return
@@ -273,7 +277,7 @@ func TestBLPop(t *testing.T) {
 }
 
 func TestRPush(t *testing.T) {
-
+	ctx := context.Background()
 	index := 0
 	for {
 
@@ -283,7 +287,7 @@ func TestRPush(t *testing.T) {
 			Phone: fmt.Sprintf("phone_%d", index),
 		}
 
-		err := RPush(listKey, val)
+		err := RPush(ctx, listKey, val)
 		if err != nil {
 			t.Error(err)
 			return
@@ -294,7 +298,7 @@ func TestRPush(t *testing.T) {
 }
 
 func TestRPush2(t *testing.T) {
-
+	ctx := context.Background()
 	index := 0
 	for {
 
@@ -304,7 +308,7 @@ func TestRPush2(t *testing.T) {
 			Phone: fmt.Sprintf("k2_phone_%d", index),
 		}
 
-		err := RPush(listKey2, val)
+		err := RPush(ctx, listKey2, val)
 		if err != nil {
 			t.Error(err)
 			return
