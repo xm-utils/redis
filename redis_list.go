@@ -1,9 +1,12 @@
 package redis
 
-import "time"
+import (
+	"context"
+	"time"
+)
 
 // BLPop 1	BLPOP key1 [key2... ] timeout 移出并获取列表的第一个元素， 如果列表没有元素会阻塞列表直到等待超时或发现可弹出元素为止。
-func BLPop[T any](timeout int, keys ...string) (k string, v T, err error) {
+func BLPop[T any](ctx context.Context, timeout int, keys ...string) (k string, v T, err error) {
 	kArr := make([]string, len(keys))
 	for i, val := range keys {
 		kArr[i] = associate(val)
@@ -19,7 +22,7 @@ func BLPop[T any](timeout int, keys ...string) (k string, v T, err error) {
 }
 
 // BRPop 2	BRPOP key1 [key2 ] timeout 移出并获取列表的最后一个元素， 如果列表没有元素会阻塞列表直到等待超时或发现可弹出元素为止。
-func BRPop[T any](timeout int, keys ...string) (k string, v T, err error) {
+func BRPop[T any](ctx context.Context, timeout int, keys ...string) (k string, v T, err error) {
 	kArr := make([]string, len(keys))
 	for i, val := range keys {
 		kArr[i] = associate(val)
@@ -35,13 +38,13 @@ func BRPop[T any](timeout int, keys ...string) (k string, v T, err error) {
 }
 
 // BRPopLPush 3	BRPOPLPUSH source destination timeout 从列表中弹出一个值，将弹出的元素插入到另外一个列表中并返回它； 如果列表没有元素会阻塞列表直到等待超时或发现可弹出元素为止。
-func BRPopLPush(source, destination string, timeout int) (string, error) {
+func BRPopLPush(ctx context.Context, source, destination string, timeout int) (string, error) {
 	cmd := client.BRPopLPush(ctx, associate(source), associate(destination), time.Duration(timeout)*time.Second)
 	return cmd.Val(), cmd.Err()
 }
 
 // LIndex 4	LINDEX key index 通过索引获取列表中的元素
-func LIndex[T any](key string, index int64) (t T, err error) {
+func LIndex[T any](ctx context.Context, key string, index int64) (t T, err error) {
 	cmd := client.LIndex(ctx, associate(key), index)
 	if cmd.Err() != nil {
 		err = cmd.Err()
@@ -51,7 +54,7 @@ func LIndex[T any](key string, index int64) (t T, err error) {
 }
 
 // LInsert 5	LINSERT key BEFORE|AFTER pivot value 在列表的元素前或者后插入元素
-func LInsert(key string, before string, pivot, val interface{}) error {
+func LInsert(ctx context.Context, key string, before string, pivot, val interface{}) error {
 	bytes, err := encode(val)
 	if err != nil {
 		return err
@@ -60,13 +63,13 @@ func LInsert(key string, before string, pivot, val interface{}) error {
 }
 
 // LLen 6	LLEN key 获取列表长度
-func LLen(key string) (int64, error) {
+func LLen(ctx context.Context, key string) (int64, error) {
 	cmd := client.LLen(ctx, associate(key))
 	return cmd.Val(), cmd.Err()
 }
 
 // LPop 7	LPOP key 移出并获取列表的第一个元素
-func LPop[T any](key string) (t T, err error) {
+func LPop[T any](ctx context.Context, key string) (t T, err error) {
 	cmd := client.LPop(ctx, associate(key))
 	if cmd.Err() != nil {
 		err = cmd.Err()
@@ -76,7 +79,7 @@ func LPop[T any](key string) (t T, err error) {
 }
 
 // LPush 8	LPUSH key value1 [value2] 将一个或多个值插入到列表头部
-func LPush(key string, vals ...interface{}) error {
+func LPush(ctx context.Context, key string, vals ...interface{}) error {
 	arr := make([]interface{}, len(vals))
 	for i, v := range vals {
 		val, err := encode(v)
@@ -89,7 +92,7 @@ func LPush(key string, vals ...interface{}) error {
 }
 
 // LPushX 9	LPUSHX key value 将一个值插入到已存在的列表头部
-func LPushX(key string, vals ...interface{}) error {
+func LPushX(ctx context.Context, key string, vals ...interface{}) error {
 	arr := make([]interface{}, len(vals))
 	for i, v := range vals {
 		val, err := encode(v)
@@ -102,7 +105,7 @@ func LPushX(key string, vals ...interface{}) error {
 }
 
 // LRange 10	LRANGE key start stop 获取列表指定范围内的元素
-func LRange[T any](key string, start, stop int64) (res []T, err error) {
+func LRange[T any](ctx context.Context, key string, start, stop int64) (res []T, err error) {
 	cmd := client.LRange(ctx, associate(key), start, stop)
 	if cmd.Err() != nil {
 		err = cmd.Err()
@@ -112,7 +115,7 @@ func LRange[T any](key string, start, stop int64) (res []T, err error) {
 }
 
 // LRem 11	LREM key count value 移除列表元素
-func LRem(key string, index int64, val interface{}) (int64, error) {
+func LRem(ctx context.Context, key string, index int64, val interface{}) (int64, error) {
 	bytes, err := encode(val)
 	if err != nil {
 		return 0, err
@@ -122,7 +125,7 @@ func LRem(key string, index int64, val interface{}) (int64, error) {
 }
 
 // LSet 12	LSET key index value 通过索引设置列表元素的值
-func LSet(key string, index int64, val interface{}) error {
+func LSet(ctx context.Context, key string, index int64, val interface{}) error {
 	bytes, err := encode(val)
 	if err != nil {
 		return err
@@ -131,12 +134,12 @@ func LSet(key string, index int64, val interface{}) error {
 }
 
 // Ltrim 13	LTRIM key start stop 对一个列表进行修剪(trim)，就是说，让列表只保留指定区间内的元素，不在指定区间之内的元素都将被删除。
-func Ltrim(key string, start, stop int64) error {
+func Ltrim(ctx context.Context, key string, start, stop int64) error {
 	return client.LTrim(ctx, associate(key), start, stop).Err()
 }
 
 // RPop 14	RPOP key 移除列表的最后一个元素，返回值为移除的元素。
-func RPop[T any](key string) (t T, err error) {
+func RPop[T any](ctx context.Context, key string) (t T, err error) {
 	cmd := client.RPop(ctx, associate(key))
 	if cmd.Err() != nil {
 		err = cmd.Err()
@@ -146,7 +149,7 @@ func RPop[T any](key string) (t T, err error) {
 }
 
 // RPopLPush 15	RPOPLPUSH source destination 移除列表的最后一个元素，并将该元素添加到另一个列表并返回
-func RPopLPush[T any](source, destination string) (t T, err error) {
+func RPopLPush[T any](ctx context.Context, source, destination string) (t T, err error) {
 	cmd := client.RPopLPush(ctx, associate(source), associate(destination))
 	if cmd.Err() != nil {
 		err = cmd.Err()
@@ -156,7 +159,7 @@ func RPopLPush[T any](source, destination string) (t T, err error) {
 }
 
 // RPush 16	RPUSH key value1 [value2] 在列表中添加一个或多个值到列表尾部
-func RPush(key string, vals ...any) error {
+func RPush(ctx context.Context, key string, vals ...any) error {
 	arr := make([]interface{}, len(vals))
 	for i, v := range vals {
 		val, err := encode(v)
@@ -170,7 +173,7 @@ func RPush(key string, vals ...any) error {
 }
 
 // RPushX 17 RPUSHX key value 为已存在的列表添加值
-func RPushX(key string, vals ...interface{}) error {
+func RPushX(ctx context.Context, key string, vals ...interface{}) error {
 	arr := make([]interface{}, len(vals))
 	for i, v := range vals {
 		val, err := encode(v)
