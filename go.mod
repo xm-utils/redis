@@ -1,4 +1,4 @@
-module github.com/xm-utils/redis
+module github.com/xm-utils/redis/v2
 
 go 1.22.10
 
